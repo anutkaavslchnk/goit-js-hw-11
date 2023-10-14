@@ -47,12 +47,15 @@ async function loadMoreImages() {
   setupLightbox();
   toggleLoadMoreButton(totalHits, images.length);
 }
-
+let totalPages = 0;
 async function fetchAndRenderImages(query, page) {
-  const { images, totalHits } = await fetchImages(query, page);
+  const { images, totalHits, total } = await fetchImages(query, page);
+  totalPages = total; // Set the value of totalPages
   renderImages(images);
-  return { images, totalHits };
+  return { images, totalHits, total };
 }
+
+
 
 async function fetchImages(query, page) {
   const BASE_URL = 'https://pixabay.com/api/';
@@ -112,19 +115,30 @@ function renderImages(images) {
 function clearGallery() {
   refs.gallery.innerHTML = '';
 }
-
+let lightbox;
 function setupLightbox() {
-  const lightbox = new SimpleLightbox('.gallery a', {});
+  if (lightbox) {
+    lightbox.refresh(); 
+  } else {
+    lightbox = new SimpleLightbox('.gallery a', {});
+  }
+  
 }
 
 function toggleLoadMoreButton(totalHits, currentImagesCount) {
-  if (totalHits > currentImagesCount) {
-    refs.loadMoreBtn.style.display = 'block';
-  } else {
+  const imagesPage = 40; 
+  const totalPages = Math.ceil(totalHits / imagesPage);
+
+  if (page >= totalPages) {
     refs.loadMoreBtn.style.display = 'none';
-    showInfoNotification("We're sorry, but you've reached the end of search results.");
+    showInfoNotification("You've reached the end of search results.");
+  } else {
+    refs.loadMoreBtn.style.display = 'block';
   }
 }
+
+
+
 
 function showInfoNotification(message) {
   Notiflix.Notify.info(message);
